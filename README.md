@@ -5,13 +5,9 @@ This is a proof-of-concept solution to the problem of formulating an optimal
 conference schedule, given a set of talks with talk durations. More generally,
 this is a potential solution to the [NP-hard](https://en.wikipedia.org/wiki/NP-hardness)
 [bin packing problem](https://en.wikipedia.org/wiki/Bin_packing_problem). It
-uses a simple brute force approach, including optional randomness, to attempt
-to optimise how talks are packed into parallel tracks.
-
-Ultimately, it tries to minimise the number of tracks, as well as the amount
-of time wasted (i.e. time from the last morning session talk until lunch, as
-well as the time from the last afternoon session talk until the networking
-event).
+uses the simple [Best Fit Decreasing (BFD)](https://en.wikipedia.org/wiki/Bin_packing_problem#Analysis_of_approximate_algorithms)
+algorithm, along with a random pre-shuffle, to get decent results quickly.
+The random pre-shuffle is largely for aesthetic purposes.
 
 The code organises talks into a morning session (between 09h00 and 12h00),
 a lunch break (always 12h00 to 13h00), an afternoon session (from 13h00 to
@@ -49,42 +45,24 @@ applications in general):
 The `sort_talks.py` script can be used as follows:
 
 ```
-usage: sort_talks.py [-h] [--max-permutations MAX_PERMUTATIONS] [--shuffle]
-                     [-v]
-                     input_file
+usage: sort_talks.py [-h] [--shuffle] input_file
 
 positional arguments:
-  input_file            A text file from which to read the list of talks (one
-                        per line).
+  input_file  A text file from which to read the list of talks (one per line).
 
 optional arguments:
-  -h, --help            show this help message and exit
-  --max-permutations MAX_PERMUTATIONS
-                        The maximum number of permutations to allow before
-                        forcibly deciding on a winner (default: 100000). Set
-                        to -1 to process all possible permutations (could take
-                        very, very long).
-  --shuffle             Shuffles the inputs first before running through the
-                        various possible permutations.
-  -v, --verbose         Show more verbose information on the output as to the
-                        winning solution.
+  -h, --help  show this help message and exit
+  --shuffle   Shuffles the inputs first before scheduling the talks.
 ```
 
 ## Usage Examples
 Some examples as to how to use the script (Linux/macOS):
 
 ```bash
-# Simple execution, 100000 permutations
 > ./sort_talks.py testcase1.txt
 
 # Shuffle the talks prior to optimising
 > ./sort_talks.py --shuffle testcase1.txt
-
-# Run with fewer permutations for quicker results
-> ./sort_talks.py --max-permutations 1000 testcase1.txt
-
-# Increase output verbosity, with all the options
-> ./sort_talks.py -v --shuffle --max-permutations 1000 testcase1.txt
 ```
 
 ## Input Format
@@ -102,36 +80,36 @@ Distributed consensus: Making impossible possible 40min
 ```
 
 ## Sample Output
-For `testcase1.txt` (pre-shuffled, 10,000 permutations):
+For `testcase1.txt` (pre-shuffled):
 
 ```
 Track 1
 
 09:00AM Communicating Over Distance 60min
-10:00AM Clojure Ate Scala (on my project) 45min
-10:45AM Common Ruby Errors 45min
-11:30AM Programming in the Boondocks of Seattle 30min
+10:00AM Ruby on Rails Legacy App Maintenance 60min
+11:00AM Writing Fast Tests Against Enterprise Rails 60min
 12:00PM Lunch
-01:00PM Accounting-Driven Development 45min
-01:45PM Ruby Errors from Mismatched Gem Versions 45min
-02:30PM Rails for Python Developers lightning
-02:35PM Lua for the Masses 30min
-03:05PM User Interface CSS in Rails Apps 30min
-03:35PM Ruby vs. Clojure for Back-End Development 30min
-04:05PM Pair Programming vs Noise 45min
+01:00PM Clojure Ate Scala (on my project) 45min
+01:45PM Accounting-Driven Development 45min
+02:30PM Ruby Errors from Mismatched Gem Versions 45min
+03:15PM Pair Programming vs Noise 45min
+04:00PM Common Ruby Errors 45min
+04:45PM Rails for Python Developers lightning
 04:50PM Networking Event
 
 Track 2
 
-09:00AM A World Without HackerNews 30min
-09:30AM Sit Down and Write 30min
+09:00AM Ruby on Rails: Why We Should Move On 60min
 10:00AM Rails Magic 60min
-11:00AM Woah 30min
+11:00AM Overdoing it in Python 45min
 12:00PM Lunch
-01:00PM Overdoing it in Python 45min
-01:45PM Writing Fast Tests Against Enterprise Rails 60min
-02:45PM Ruby on Rails Legacy App Maintenance 60min
-03:45PM Ruby on Rails: Why We Should Move On 60min
+01:00PM User Interface CSS in Rails Apps 30min
+01:30PM Sit Down and Write 30min
+02:00PM Lua for the Masses 30min
+02:30PM Woah 30min
+03:00PM A World Without HackerNews 30min
+03:30PM Programming in the Boondocks of Seattle 30min
+04:00PM Ruby vs. Clojure for Back-End Development 30min
 04:50PM Networking Event
 ```
 
