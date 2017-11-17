@@ -7,7 +7,12 @@ this is a potential solution to the [NP-hard](https://en.wikipedia.org/wiki/NP-h
 [bin packing problem](https://en.wikipedia.org/wiki/Bin_packing_problem). It
 uses the simple [Best Fit Decreasing (BFD)](https://en.wikipedia.org/wiki/Bin_packing_problem#Analysis_of_approximate_algorithms)
 algorithm, along with a random pre-shuffle, to get decent results quickly.
-The random pre-shuffle is largely for aesthetic purposes.
+The random pre-shuffle is largely for aesthetic purposes (reorganising talks of
+equal lengths). Some modification of the algorithm was necessary to account for
+the uneven bin sizes (the morning and afternoon talk sessions are not the same
+duration, and a choice was made to rather fully pack one track's morning and
+afternoon session prior to packing the next track).
+
 [More optimal solutions exist](http://www.aaai.org/Papers/AAAI/2002/AAAI02-110.pdf),
 but for practical purposes BFD seems adequate.
 
@@ -89,32 +94,32 @@ For `testcase1.txt` (pre-shuffled):
 ```
 Track 1
 
-09:00AM Communicating Over Distance 60min
-10:00AM Ruby on Rails Legacy App Maintenance 60min
-11:00AM Writing Fast Tests Against Enterprise Rails 60min
+09:00AM Ruby on Rails: Why We Should Move On 60min
+10:00AM Communicating Over Distance 60min
+11:00AM Rails Magic 60min
 12:00PM Lunch
-01:00PM Clojure Ate Scala (on my project) 45min
-01:45PM Accounting-Driven Development 45min
-02:30PM Ruby Errors from Mismatched Gem Versions 45min
-03:15PM Pair Programming vs Noise 45min
-04:00PM Common Ruby Errors 45min
-04:45PM Rails for Python Developers lightning
-04:50PM Networking Event
+01:00PM Ruby on Rails Legacy App Maintenance 60min
+02:00PM Writing Fast Tests Against Enterprise Rails 60min
+03:00PM Clojure Ate Scala (on my project) 45min
+03:45PM Accounting-Driven Development 45min
+04:30PM Programming in the Boondocks of Seattle 30min
+05:00PM Networking Event
 
 Track 2
 
-09:00AM Ruby on Rails: Why We Should Move On 60min
-10:00AM Rails Magic 60min
-11:00AM Overdoing it in Python 45min
+09:00AM Pair Programming vs Noise 45min
+09:45AM Ruby Errors from Mismatched Gem Versions 45min
+10:30AM Overdoing it in Python 45min
+11:15AM Common Ruby Errors 45min
 12:00PM Lunch
-01:00PM User Interface CSS in Rails Apps 30min
-01:30PM Sit Down and Write 30min
-02:00PM Lua for the Masses 30min
+01:00PM Sit Down and Write 30min
+01:30PM Lua for the Masses 30min
+02:00PM User Interface CSS in Rails Apps 30min
 02:30PM Woah 30min
-03:00PM A World Without HackerNews 30min
-03:30PM Programming in the Boondocks of Seattle 30min
-04:00PM Ruby vs. Clojure for Back-End Development 30min
-04:50PM Networking Event
+03:00PM Ruby vs. Clojure for Back-End Development 30min
+03:30PM A World Without HackerNews 30min
+04:00PM Rails for Python Developers lightning
+05:00PM Networking Event
 ```
 
 ## Unit Tests
