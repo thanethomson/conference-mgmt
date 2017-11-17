@@ -20,14 +20,14 @@ code.
 ## Running
 There is a single script in the root folder called `sort_talks.py`, which is
 executable given a particular version of Python. Both examples below assume
-that a `python3` executable is available on your system path.
+that a `python3` or `python` (v3) executable is available on your system path.
 
 ```bash
 # Linux/macOS
 > ./sort_talks.py
 
 # Windows
-> python3 sort_talks.py
+> python sort_talks.py
 ```
 
 To run this inside a virtual environment (the recommended approach for Python
