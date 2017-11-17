@@ -127,3 +127,13 @@ Track 2
 03:45PM Ruby on Rails: Why We Should Move On 60min
 04:50PM Networking Event
 ```
+
+## Unit Tests
+Unit tests are located in the `tests` folder. To run them, from the project
+directory, run the following command:
+
+```bash
+> python3 -m unittest discover
+```
+
+There should be 14 tests in total at present that should execute.
