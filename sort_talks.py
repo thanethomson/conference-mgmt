@@ -15,7 +15,9 @@ __all__ = [
     "read_talks_from_file"
 ]
 
-# Some constants
+# Some constants. NOTE: Changing these will necessarily also require some code
+# changes, including possibly to the
+# ConferenceSchedule.find_best_fit_session_prefer_mornings() function.
 DAY_START_HOUR = 9
 LUNCH_START_HOUR = 12
 LUNCH_END_HOUR = 13
