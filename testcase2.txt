@@ -1,0 +1,36 @@
+Using open to drive change 15min
+The blockchain and open source: The new world order 15min
+How InnerSource is like FLOSSing lightning
+Evolving the JavaScript ecosystem lightning
+Brilliant pebbles 15min
+Distributed consensus: Making impossible possible 40min
+Useful Rust 40min
+Open source or proprietary: Choose wisely 40min
+Open source and the fourth industrial age 40min
+Moving open data from tech to culture 40min
+Digital transformation: The why, what, and how of @WalmartLabs's migration to the Electrode platform in less than a year 40min
+Learning microservices in the open with GameOn! 40min
+ChatOps: How to enhance your DevOps workflow 40min
+Marketing for developers 40min
+Dealing with cultural diversity and internal advocacy within a distributed team 40min
+Engaging with open data through video games 40min
+A quick intro to Innersource 40min
+MVI: An architecture for reactive programming 40min
+Docker from development to production 40min
+The seven (more) deadly sins of microservices 40min
+Scaling the Internet of Things with open data 40min
+Patterns and practices for real-world, functional, event-driven microservices 40min
+Visualizing concurrency in Go 40min
+The business of community 40min
+Open innovation for the NHS: Navigating complexity 40min
+Open sourcing learning to rank in Solr 40min
+The bait and switch of open source 40min
+Said no CEO ever: Things that don't matter in the cloud 40min
+The top 10 things you need to know about Perl 6 40min
+Inside the open source sausage factory: Lessons learned from decades selling open source 40min
+Building a pipeline: The case for hiring junior developers 40min
+Open funding data: 360Giving's journey so far 40min
+The wonderful world of webhooks 40min
+Node-RED: Wiring the IoT with open source tools 40min
+Open source for closed source companies 40min
+Using the ESP8266 to build the Internet of Things 40min
