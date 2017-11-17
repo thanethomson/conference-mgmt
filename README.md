@@ -13,6 +13,13 @@ of time wasted (i.e. time from the last morning session talk until lunch, as
 well as the time from the last afternoon session talk until the networking
 event).
 
+The code organises talks into a morning session (between 09h00 and 12h00),
+a lunch break (always 12h00 to 13h00), an afternoon session (from 13h00 to
+anywhere between 16h00 and 17h00), as well as a networking event. The
+networking event, logically, should start at the same time from the perspective
+of all tracks, and should start at the end of the talk that ends the latest
+across all tracks.
+
 ## Requirements
 Only [Python 3](https://www.python.org/downloads/) is required to run this
 code.
