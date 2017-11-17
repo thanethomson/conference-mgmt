@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
 import argparse
-import itertools
 import random
 import time
+import math
 
 __all__ = [
     "Talk",
@@ -24,6 +24,9 @@ NETWORKING_START_HOUR_MAX = 17
 HOURS_BEFORE_LUNCH = LUNCH_START_HOUR - DAY_START_HOUR
 HOURS_AFTER_LUNCH = NETWORKING_START_HOUR_MAX - LUNCH_END_HOUR
 MAX_TALK_DURATION = 60*min(HOURS_BEFORE_LUNCH, HOURS_AFTER_LUNCH)
+MORNING_SESSION_DURATION = HOURS_BEFORE_LUNCH*60
+AFTERNOON_SESSION_DURATION = HOURS_AFTER_LUNCH*60
+TRACK_DURATION = MORNING_SESSION_DURATION + AFTERNOON_SESSION_DURATION
 
 
 def minutes_to_friendly_time(minutes, start_hour=0):
@@ -115,7 +118,7 @@ class TalkSession:
         self.start_hour = DAY_START_HOUR if is_morning_session else LUNCH_END_HOUR
         self.is_morning_session = is_morning_session
         # how many minutes do we have in this session?
-        self.total_time = (HOURS_BEFORE_LUNCH if is_morning_session else HOURS_AFTER_LUNCH)*60
+        self.total_time = (MORNING_SESSION_DURATION if is_morning_session else AFTERNOON_SESSION_DURATION)
         self.talks = []
         # this we want to maximise
         self.used_time = 0
@@ -218,14 +221,48 @@ class ConferenceSchedule:
         self.next_track_no = 1
 
     def add_talks(self, talks):
-        self.tracks = []
-        track = self.create_track()
-        for talk in talks:
-            added = False
-            while not added:
-                added = track.add_talk(talk)
-                if not added:
-                    track = self.create_track()
+        # estimate total talk duration
+        total_talks_duration = sum([talk.duration for talk in talks])
+        est_tracks = int(math.ceil(total_talks_duration / TRACK_DURATION))
+        self.tracks = [self.create_track() for i in range(est_tracks)]
+        # sort talks according to decreasing duration (Best Fit Decreasing algorithm)
+        sorted_talks = sorted(talks, key=lambda talk: -talk.duration)
+        for talk in sorted_talks:
+            # find the best session into which to insert this talk
+            session = self.find_best_fit_session(talk)
+            # no space anywhere
+            if session is None:
+                # add a new track
+                self.tracks.append(self.create_track())
+                session = self.find_best_fit_session(talk)
+                # paranoia here
+                if session is None:
+                    raise Exception("Something went horribly wrong")
+            session.add_talk(talk)
+
+    def get_all_sessions(self):
+        for track in self.tracks:
+            yield track.morning_session
+            yield track.afternoon_session
+
+    def find_best_fit_session(self, talk):
+        """Attempts to find the session that best fits the given talk, as per
+        the Best Fit Decreasing (BFD) algorithm.
+        
+        Args:
+            talk: The talk that needs a home.
+        
+        Returns:
+            The TalkSession into which to fit this talk.
+        """
+        best_session = None
+        min_wasted_time = TRACK_DURATION
+        for session in self.get_all_sessions():
+            wasted_time = session.wasted_time - talk.duration
+            if session.wasted_time >= talk.duration and wasted_time < min_wasted_time:
+                best_session = session
+                min_wasted_time = wasted_time
+        return best_session
 
     def create_track(self):
         track = TalkTrack(self.next_track_no)
@@ -278,60 +315,19 @@ def main():
         help="A text file from which to read the list of talks (one per line)."
     )
     parser.add_argument(
-        "--max-permutations",
-        type=int,
-        default=100000,
-        help="The maximum number of permutations to allow before forcibly " +
-            "deciding on a winner (default: 100000). Set to -1 to process " +
-            "all possible permutations (could take very, very long)."
-    )
-    parser.add_argument(
         "--shuffle",
         action="store_true",
-        help="Shuffles the inputs first before running through the various " +
-            "possible permutations."
-    )
-    parser.add_argument(
-        "-v", "--verbose",
-        action="store_true",
-        help="Show more verbose information on the output as to the winning " +
-            "solution."
+        help="Shuffles the inputs first before scheduling the talks."
     )
     args = parser.parse_args()
     talks = [talk for talk in read_talks_from_file(args.input_file)]
     if args.shuffle:
         random.seed(time.time())
         talks = random.sample(talks, k=len(talks))
-    best_schedule = None
-    min_tracks = len(talks)
-    min_wasted_time = sum([talk.duration for talk in talks])
 
-    perm_counter = 0
-
-    for talk_perm in itertools.permutations(talks):
-        schedule = ConferenceSchedule()
-        schedule.add_talks(talk_perm)
-        
-        wasted_time = schedule.get_wasted_time()
-        track_count = len(schedule.tracks)
-        if track_count < min_tracks or wasted_time < min_wasted_time:
-            # make a deep copy of the conference schedule
-            best_schedule = ConferenceSchedule.copy_of(schedule)
-            min_tracks = track_count
-            min_wasted_time = wasted_time
-
-        perm_counter += 1
-        if args.max_permutations > -1 and perm_counter >= args.max_permutations:
-            break
-
-        if args.verbose and perm_counter % 1000 == 0:
-            print("Processed %d permutations so far" % perm_counter)
-    
-    if args.verbose:
-        print("\nTotal permutations tested          : %d" % perm_counter)
-        print("Wasted time in winning permutation : %d mins\n" % min_wasted_time)
-
-    print("%s\n" % best_schedule)
+    schedule = ConferenceSchedule()
+    schedule.add_talks(talks)
+    print("%s\n" % schedule)
 
 
 if __name__ == "__main__":
