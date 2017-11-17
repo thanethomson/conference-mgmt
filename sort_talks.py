@@ -21,6 +21,7 @@ LUNCH_START_HOUR = 12
 LUNCH_END_HOUR = 13
 NETWORKING_START_HOUR_MIN = 16
 NETWORKING_START_HOUR_MAX = 17
+NETWORKING_LEEWAY = NETWORKING_START_HOUR_MAX - NETWORKING_START_HOUR_MIN
 HOURS_BEFORE_LUNCH = LUNCH_START_HOUR - DAY_START_HOUR
 HOURS_AFTER_LUNCH = NETWORKING_START_HOUR_MAX - LUNCH_END_HOUR
 MAX_TALK_DURATION = 60*min(HOURS_BEFORE_LUNCH, HOURS_AFTER_LUNCH)
@@ -114,9 +115,11 @@ class TalkSession:
     contain talks. In the bin packing algorithm, this represents a bin whose
     contents we want to maximise."""
 
-    def __init__(self, is_morning_session):
+    def __init__(self, is_morning_session, track=None, verbose=False):
         self.start_hour = DAY_START_HOUR if is_morning_session else LUNCH_END_HOUR
         self.is_morning_session = is_morning_session
+        self.track = track
+        self.verbose = verbose
         # how many minutes do we have in this session?
         self.total_time = (MORNING_SESSION_DURATION if is_morning_session else AFTERNOON_SESSION_DURATION)
         self.talks = []
@@ -145,6 +148,13 @@ class TalkSession:
         if last_talk_end_time + talk.duration <= self.total_time:
             self.talks.append(talk.start_at(last_talk_end_time))
             self.use_time(talk.duration)
+            if self.verbose and self.track:
+                print("Added talk \"%s\" to %s session of track %d (now only wasted %d mins)" % (
+                    talk.title,
+                    "morning" if self.is_morning_session else "afternoon",
+                    self.track.track_no,
+                    self.wasted_time
+                ))
             return True
         # no more space
         return False
@@ -165,10 +175,11 @@ class TalkTrack:
     """Represents a single track, which contains a morning and afternoon
     talk session."""
 
-    def __init__(self, track_no):
+    def __init__(self, track_no, verbose=False):
         self.track_no = track_no
-        self.morning_session = TalkSession(True)
-        self.afternoon_session = TalkSession(False)
+        self.verbose = verbose
+        self.morning_session = TalkSession(True, track=self, verbose=verbose)
+        self.afternoon_session = TalkSession(False, track=self, verbose=verbose)
 
     def add_talk(self, talk):
         added = False
@@ -198,8 +209,8 @@ class TalkTrack:
             ('Track %d\n\n' % self.track_no) +
             ('%s' % self.morning_session) +
             '\n' + self.get_lunchtime_string() + '\n' +
-            ('%s' % self.afternoon_session) +
-            '\n' + minutes_to_friendly_time(latest_talk_end_time, start_hour=LUNCH_END_HOUR) +
+            (('%s\n' % self.afternoon_session) if self.afternoon_session.talks else '') +
+            minutes_to_friendly_time(latest_talk_end_time, start_hour=LUNCH_END_HOUR) +
             ' Networking Event'
         )
 
@@ -216,13 +227,22 @@ class ConferenceSchedule:
     giving additional information about the schedule to help with finding the
     optimal schedule later."""
 
-    def __init__(self):
+    def __init__(self, verbose=False):
         self.tracks = []
         self.next_track_no = 1
+        self.verbose = verbose
 
     def add_talks(self, talks):
+        """Adds the given collection of talks to this conference schedule. This
+        will first clear out any existing talk tracks prior to adding the talks,
+        and then add talks according to the Best Fit Decreasing (BFD) algorithm.
+
+        Args:
+            talks: A collection of Talk instances to add to the schedule.
+        """
         # estimate total talk duration
         total_talks_duration = sum([talk.duration for talk in talks])
+        # estimate minimum number of tracks
         est_tracks = int(math.ceil(total_talks_duration / TRACK_DURATION))
         self.tracks = [self.create_track() for i in range(est_tracks)]
         # sort talks according to decreasing duration (Best Fit Decreasing algorithm)
@@ -238,7 +258,8 @@ class ConferenceSchedule:
                 # paranoia here
                 if session is None:
                     raise Exception("Something went horribly wrong")
-            session.add_talk(talk)
+            if not session.add_talk(talk):
+                raise Exception("Something went horribly wrong")
 
     def get_all_sessions(self):
         for track in self.tracks:
@@ -255,17 +276,30 @@ class ConferenceSchedule:
         Returns:
             The TalkSession into which to fit this talk.
         """
-        best_session = None
-        min_wasted_time = TRACK_DURATION
+        best_morning_session, best_afternoon_session = None, None
+        min_morning_wasted_time, min_afternoon_wasted_time = TRACK_DURATION, TRACK_DURATION
         for session in self.get_all_sessions():
             wasted_time = session.wasted_time - talk.duration
-            if session.wasted_time >= talk.duration and wasted_time < min_wasted_time:
-                best_session = session
-                min_wasted_time = wasted_time
-        return best_session
+            if session.is_morning_session:
+                if wasted_time >= 0 and wasted_time < min_morning_wasted_time:
+                    best_morning_session = session
+                    min_morning_wasted_time = wasted_time
+            else:
+                if wasted_time >= 0 and wasted_time < min_afternoon_wasted_time:
+                    best_afternoon_session = session
+                    min_afternoon_wasted_time = wasted_time
+        # if we have competing morning and afternoon sessions here
+        if best_morning_session and best_afternoon_session:
+            # if the afternoon session is in an earlier track, prefer it
+            if best_afternoon_session.track.track_no < best_morning_session.track.track_no:
+                return best_afternoon_session
+        # otherwise go for the morning session
+        if best_morning_session:
+            return best_morning_session
+        return best_afternoon_session
 
     def create_track(self):
-        track = TalkTrack(self.next_track_no)
+        track = TalkTrack(self.next_track_no, verbose=self.verbose)
         self.tracks.append(track)
         self.next_track_no += 1
         return track
@@ -281,7 +315,7 @@ class ConferenceSchedule:
 
     def __str__(self):
         latest_talk = self.get_latest_talk()
-        return "\n\n".join(['%s' % track.to_string(latest_talk.end_time) for track in self.tracks])
+        return "\n"+("\n\n".join(['%s' % track.to_string(latest_talk.end_time) for track in self.tracks]))
 
     @classmethod
     def copy_of(cls, other):
@@ -319,15 +353,23 @@ def main():
         action="store_true",
         help="Shuffles the inputs first before scheduling the talks."
     )
+    parser.add_argument(
+        "-v", "--verbose",
+        action="store_true",
+        help="Adds some verbose output about the quality of the solution."
+    )
     args = parser.parse_args()
     talks = [talk for talk in read_talks_from_file(args.input_file)]
     if args.shuffle:
         random.seed(time.time())
         talks = random.sample(talks, k=len(talks))
 
-    schedule = ConferenceSchedule()
+    schedule = ConferenceSchedule(verbose=args.verbose)
     schedule.add_talks(talks)
     print("%s\n" % schedule)
+
+    if args.verbose:
+        print("Total wasted time in solution: %d mins\n" % schedule.get_wasted_time())
 
 
 if __name__ == "__main__":
