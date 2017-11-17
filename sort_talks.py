@@ -227,9 +227,10 @@ class ConferenceSchedule:
     giving additional information about the schedule to help with finding the
     optimal schedule later."""
 
-    def __init__(self, verbose=False):
+    def __init__(self, prefer_mornings=False, verbose=False):
         self.tracks = []
         self.next_track_no = 1
+        self.prefer_mornings = prefer_mornings
         self.verbose = verbose
 
     def add_talks(self, talks):
@@ -249,12 +250,14 @@ class ConferenceSchedule:
         sorted_talks = sorted(talks, key=lambda talk: -talk.duration)
         for talk in sorted_talks:
             # find the best session into which to insert this talk
-            session = self.find_best_fit_session(talk)
+            session = self.find_best_fit_session_prefer_mornings(talk) \
+                if self.prefer_mornings else self.find_best_fit_session(talk)
             # no space anywhere
             if session is None:
                 # add a new track
                 self.tracks.append(self.create_track())
-                session = self.find_best_fit_session(talk)
+                session = self.find_best_fit_session_prefer_mornings(talk) \
+                    if self.prefer_mornings else self.find_best_fit_session(talk)
                 # paranoia here
                 if session is None:
                     raise Exception("Something went horribly wrong")
@@ -297,6 +300,20 @@ class ConferenceSchedule:
         if best_morning_session:
             return best_morning_session
         return best_afternoon_session
+
+    def find_best_fit_session_prefer_mornings(self, talk):
+        """Similar to find_best_fit_session(), but prefers to fill up morning
+        sessions prior to filling up afternoon ones. This is a natural consequence of
+        having afternoon sessions of longer durations than morning ones (given the
+        choice of algorithm)."""
+        best_session = None
+        min_wasted_time = TRACK_DURATION
+        for session in self.get_all_sessions():
+            wasted_time = session.wasted_time - talk.duration
+            if wasted_time >= 0 and wasted_time < min_wasted_time:
+                best_session = session
+                min_wasted_time = wasted_time
+        return best_session
 
     def create_track(self):
         track = TalkTrack(self.next_track_no, verbose=self.verbose)
@@ -354,6 +371,12 @@ def main():
         help="Shuffles the inputs first before scheduling the talks."
     )
     parser.add_argument(
+        "--prefer-mornings",
+        action="store_true",
+        help="Indicate to prefer to fill up morning sessions before filling " +
+            "up the afternoon sessions."
+    )
+    parser.add_argument(
         "-v", "--verbose",
         action="store_true",
         help="Adds some verbose output about the quality of the solution."
@@ -364,7 +387,7 @@ def main():
         random.seed(time.time())
         talks = random.sample(talks, k=len(talks))
 
-    schedule = ConferenceSchedule(verbose=args.verbose)
+    schedule = ConferenceSchedule(prefer_mornings=args.prefer_mornings, verbose=args.verbose)
     schedule.add_talks(talks)
     print("%s\n" % schedule)
 

@@ -8,7 +8,9 @@ this is a potential solution to the [NP-hard](https://en.wikipedia.org/wiki/NP-h
 uses the simple [Best Fit Decreasing (BFD)](https://en.wikipedia.org/wiki/Bin_packing_problem#Analysis_of_approximate_algorithms)
 algorithm, along with a random pre-shuffle, to get decent results quickly.
 The random pre-shuffle is largely for aesthetic purposes (reorganising talks of
-equal lengths). Some modification of the algorithm was necessary to account for
+equal lengths).
+
+Some modification of the algorithm was necessary to account for
 the uneven bin sizes (the morning and afternoon talk sessions are not the same
 duration, and a choice was made to rather fully pack one track's morning and
 afternoon session prior to packing the next track).
@@ -52,16 +54,19 @@ applications in general):
 The `sort_talks.py` script can be used as follows:
 
 ```
-usage: sort_talks.py [-h] [--shuffle] [-v] input_file
+usage: sort_talks.py [-h] [--shuffle] [--prefer-mornings] [-v] input_file
 
 positional arguments:
-  input_file     A text file from which to read the list of talks (one per
-                 line).
+  input_file         A text file from which to read the list of talks (one per
+                     line).
 
 optional arguments:
-  -h, --help     show this help message and exit
-  --shuffle      Shuffles the inputs first before scheduling the talks.
-  -v, --verbose  Adds some verbose output about the quality of the solution.
+  -h, --help         show this help message and exit
+  --shuffle          Shuffles the inputs first before scheduling the talks.
+  --prefer-mornings  Indicate to prefer to fill up morning sessions before
+                     filling up the afternoon sessions.
+  -v, --verbose      Adds some verbose output about the quality of the
+                     solution.
 ```
 
 ## Usage Examples
@@ -72,6 +77,11 @@ Some examples as to how to use the script (Linux/macOS):
 
 # Shuffle the talks prior to optimising
 > ./sort_talks.py --shuffle testcase1.txt
+
+# Prefer filling up morning sessions prior to afternoon ones (seems to
+# give a better aesthetic to the schedule, and keeps afternoon talks shorter,
+# which could be beneficial in terms of people's attention spans)
+> ./sort_talks.py --shuffle --prefer-mornings testcase1.txt
 ```
 
 ## Input Format
