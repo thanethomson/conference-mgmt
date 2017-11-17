@@ -183,7 +183,12 @@ class TalkTrack:
         return self.morning_session.wasted_time + self.afternoon_session.wasted_time
 
     def get_latest_talk(self):
-        return self.afternoon_session.talks[-1]
+        if len(self.afternoon_session.talks) > 0:
+            return self.afternoon_session.talks[-1]
+        elif len(self.morning_session.talks) > 0:
+            return self.morning_session.talks[-1]
+        else:
+            return None
 
     def to_string(self, latest_talk_end_time):
         return (
