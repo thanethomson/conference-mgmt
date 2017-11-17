@@ -8,6 +8,8 @@ this is a potential solution to the [NP-hard](https://en.wikipedia.org/wiki/NP-h
 uses the simple [Best Fit Decreasing (BFD)](https://en.wikipedia.org/wiki/Bin_packing_problem#Analysis_of_approximate_algorithms)
 algorithm, along with a random pre-shuffle, to get decent results quickly.
 The random pre-shuffle is largely for aesthetic purposes.
+[More optimal solutions exist](http://www.aaai.org/Papers/AAAI/2002/AAAI02-110.pdf),
+but for practical purposes BFD seems adequate.
 
 The code organises talks into a morning session (between 09h00 and 12h00),
 a lunch break (always 12h00 to 13h00), an afternoon session (from 13h00 to
