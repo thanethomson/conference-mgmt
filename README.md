@@ -47,14 +47,16 @@ applications in general):
 The `sort_talks.py` script can be used as follows:
 
 ```
-usage: sort_talks.py [-h] [--shuffle] input_file
+usage: sort_talks.py [-h] [--shuffle] [-v] input_file
 
 positional arguments:
-  input_file  A text file from which to read the list of talks (one per line).
+  input_file     A text file from which to read the list of talks (one per
+                 line).
 
 optional arguments:
-  -h, --help  show this help message and exit
-  --shuffle   Shuffles the inputs first before scheduling the talks.
+  -h, --help     show this help message and exit
+  --shuffle      Shuffles the inputs first before scheduling the talks.
+  -v, --verbose  Adds some verbose output about the quality of the solution.
 ```
 
 ## Usage Examples
